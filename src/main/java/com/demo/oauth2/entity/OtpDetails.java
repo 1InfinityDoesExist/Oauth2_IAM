@@ -10,7 +10,7 @@ import javax.persistence.Table;
 
 @Entity(name = "OtpDetails")
 @Table(name = "otp_details")
-@lombok.Data
+
 public class OtpDetails {
 
     @Id
