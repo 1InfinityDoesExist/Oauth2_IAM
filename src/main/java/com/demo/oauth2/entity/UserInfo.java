@@ -1,5 +1,6 @@
 package com.demo.oauth2.entity;
 
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -11,8 +12,12 @@ import javax.persistence.Table;
 @Entity(name = "UserInfo")
 @Table(name = "user_info")
 @lombok.Data
-public class UserInfo {
+public class UserInfo implements Serializable {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

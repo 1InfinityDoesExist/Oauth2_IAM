@@ -20,6 +20,11 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.fb</groupId>
+			<artifactId>demo</artifactId>
+			<version>2.3.3.RELEASE</version>
+		</dependency>
 		<!-- Security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

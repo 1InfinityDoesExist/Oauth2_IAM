@@ -7,4 +7,6 @@ import com.demo.oauth2.entity.UserRole;
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
 
+    public UserRole findByName(String roleName);
+
 }
