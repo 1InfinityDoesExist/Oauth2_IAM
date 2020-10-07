@@ -1,5 +1,6 @@
 package com.demo.oauth2.entity;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -10,8 +11,13 @@ import javax.persistence.Table;
 
 @Entity(name = "OtpDetails")
 @Table(name = "otp_details")
+@lombok.Data
+public class OtpDetails implements Serializable {
 
-public class OtpDetails {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

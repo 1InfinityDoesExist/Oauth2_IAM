@@ -16,7 +16,7 @@ import com.demo.oauth2.util.Constants;
 @Component
 public class EmailService {
     @Autowired
-    private GmailProvider gmailProvider;
+    private GoogleProvider googleProvider;
 
     @Value("${reset.password.email.host}")
     private String host;
@@ -64,7 +64,7 @@ public class EmailService {
     }
 
     private void getJavaMailProperties(Properties properties) {
-        gmailProvider.getGmailProperties().forEach((key, value) -> {
+        googleProvider.getGmailProperties().forEach((key, value) -> {
             properties.setProperty(key, value);
         });
     }
