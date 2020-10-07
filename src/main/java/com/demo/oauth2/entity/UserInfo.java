@@ -1,6 +1,7 @@
 package com.demo.oauth2.entity;
 
 import java.util.List;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,11 +18,13 @@ public class UserInfo {
     private Long id;
     private String username;
     private String password;
+    @ElementCollection(targetClass = Long.class)
     private List<Long> roles;
     private Integer parentTenant;
     private String firstName;
     private String lastName;
     private String imageUrl;
+    @ElementCollection(targetClass = String.class)
     private List<String> authorities;
     private String email;
     private String mobile;
