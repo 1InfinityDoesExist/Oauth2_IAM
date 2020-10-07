@@ -90,12 +90,14 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public UserInfo getUserInfo(Long userInfoId) throws Exception {
+        log.info(":::::UserInfoServiceImpl Class, userInfo method::::");
         if (ObjectUtils.isEmpty(userInfoId)) {
             throw new InvalidInputException("userInfoId must not be null or empty");
         }
         Optional<UserInfo> userInfoFromDB = userInfoRepository.findById(userInfoId);
+        log.info(":::::UserInfoFromDB {}", userInfoFromDB);
         if (!userInfoFromDB.isPresent()) {
-            new UserInfoNotFoundException(
+            throw new UserInfoNotFoundException(
                             "UserInfo not found for the given id : " + userInfoId);
         }
         return userInfoFromDB.get();

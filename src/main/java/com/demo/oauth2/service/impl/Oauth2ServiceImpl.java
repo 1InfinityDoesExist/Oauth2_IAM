@@ -30,7 +30,7 @@ public class Oauth2ServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("::::::Insdiee Oauth2ServiceImpl Class, loadUserByUserName method:::::");
+        log.info("::::::Insdie Oauth2ServiceImpl Class, loadUserByUserName method:::::");
         HttpServletRequest request =
                         ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
                                         .getRequest();

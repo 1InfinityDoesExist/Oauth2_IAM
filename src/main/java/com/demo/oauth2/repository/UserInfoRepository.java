@@ -7,4 +7,6 @@ import com.demo.oauth2.entity.UserInfo;
 @Repository
 public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
 
+    UserInfo findUserInfoById(Long userInfoId);
+
 }
