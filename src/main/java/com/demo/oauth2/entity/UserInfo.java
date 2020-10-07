@@ -1,6 +1,7 @@
 package com.demo.oauth2.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -24,13 +25,13 @@ public class UserInfo implements Serializable {
     private String username;
     private String password;
     @ElementCollection(targetClass = Long.class)
-    private List<Long> roles;
+    private List<Long> roles = new ArrayList<>();
     private Integer parentTenant;
     private String firstName;
     private String lastName;
     private String imageUrl;
     @ElementCollection(targetClass = String.class)
-    private List<String> authorities;
+    private List<String> authorities = new ArrayList<>();
     private String email;
     private String mobile;
     private boolean isMobileVerified;
