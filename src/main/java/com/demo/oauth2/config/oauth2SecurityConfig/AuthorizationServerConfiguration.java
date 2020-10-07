@@ -123,7 +123,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         log.info("Signingkey : {}", signingKey);
         converter.setSigningKey(new String(Base64.getDecoder().decode(signingKey)));
         log.info("::::::::::::::::::::converter :::::::::::::: " + converter);
-        return null;
+        return converter;
     }
 
     @Bean
