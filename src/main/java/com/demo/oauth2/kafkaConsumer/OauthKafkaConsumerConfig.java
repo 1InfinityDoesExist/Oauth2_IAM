@@ -52,7 +52,7 @@ public class OauthKafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerConatinerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContinerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                         new ConcurrentKafkaListenerContainerFactory<String, String>();
         factory.setConsumerFactory(consumerFactory());
