@@ -9,12 +9,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import com.demo.oauth2.entity.UserInfo;
 import com.demo.oauth2.exception.UserInfoNotFoundException;
 import com.demo.oauth2.model.request.UserInfoCreateRequest;
 import com.demo.oauth2.model.response.UserInfoCreateResponse;
 import com.demo.oauth2.service.UserInfoService;
+import com.demo.oauth2.util.AmazonS3Util;
 import com.fb.demo.exception.TenantNotFoundException;
 import com.fb.demo.service.impl.InvalidInputException;
 
@@ -24,6 +27,9 @@ public class UserInfoController {
 
     @Autowired
     private UserInfoService userInfoService;
+
+    @Autowired
+    private AmazonS3Util amazonS3Util;
 
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUserInfo(
@@ -58,5 +64,16 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(new ModelMap().addAttribute("msg", ex.getMessage()));
         }
+    }
+
+    @PostMapping(value = "/upload/{parentTenant}/{userName}")
+    public ResponseEntity<?> uploadUserProfilePic(
+                    @PathVariable(value = "parentTenant", required = true) String parentTenant,
+                    @PathVariable(value = "userName", required = true) String userName,
+                    @RequestParam(value = "pic", required = true) MultipartFile pic)
+                    throws Exception {
+        String response = amazonS3Util.uploadUserInfoImage(pic, parentTenant, userName);
+        return ResponseEntity.status(HttpStatus.OK)
+                        .body(new ModelMap().addAttribute("msg", response));
     }
 }

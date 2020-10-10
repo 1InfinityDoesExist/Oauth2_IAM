@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.ModelMap;
@@ -15,6 +16,8 @@ import com.demo.oauth2.email.EmailService;
 import com.demo.oauth2.entity.OtpDetails;
 import com.demo.oauth2.entity.UserInfo;
 import com.demo.oauth2.entity.UserRole;
+import com.demo.oauth2.exception.ApplicationException;
+import com.demo.oauth2.exception.Error;
 import com.demo.oauth2.exception.UserAlreadyExistException;
 import com.demo.oauth2.exception.UserInfoNotFoundException;
 import com.demo.oauth2.exception.UserRoleNotFound;
@@ -87,7 +90,8 @@ public class UserInfoServiceImpl implements UserInfoService {
                 userInfo.setEmail(request.getEmail());
             } else {
                 log.info("::::Inside else part of send email");
-                // thow the exception here
+                throw new ApplicationException(HttpStatus.NOT_FOUND, Error.NOT_FOUND,
+                                "Mail not sent.");
             }
         }
         userInfo.setOtpDetails(otpDetails.getId());

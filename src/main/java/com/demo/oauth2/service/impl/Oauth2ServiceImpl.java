@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -20,6 +21,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import com.demo.oauth2.entity.UserInfo;
 import com.demo.oauth2.entity.UserRole;
+import com.demo.oauth2.exception.ApplicationException;
+import com.demo.oauth2.exception.Error;
 import com.demo.oauth2.repository.UserInfoRepository;
 import com.demo.oauth2.repository.UserRoleRepository;
 import com.fb.demo.entity.Tenant;
@@ -77,7 +80,8 @@ public class Oauth2ServiceImpl implements UserDetailsService {
         if (!StringUtils.isEmpty(parentTenant)) {
             tenant = tenantRepository.getTenantByName(parentTenant);
             if (tenant == null) {
-                // Exception
+                throw new ApplicationException(HttpStatus.NOT_FOUND, Error.NOT_FOUND,
+                                "Tenant not Found");
             }
         }
         String mobileRegex = "[0-9]+";
@@ -99,7 +103,7 @@ public class Oauth2ServiceImpl implements UserDetailsService {
         }
         if (userInfo == null) {
             log.info("::::::UserInfo is null");
-            // exception
+            throw new ApplicationException(HttpStatus.NOT_FOUND, Error.NOT_FOUND, "User not Found");
         }
         return userInfo;
     }
