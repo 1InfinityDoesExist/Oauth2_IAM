@@ -7,7 +7,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.ModelMap;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import com.demo.oauth2.email.EmailService;
 import com.demo.oauth2.entity.UserInfo;
 import com.demo.oauth2.entity.UserRole;
 import com.demo.oauth2.exception.UserInfoNotFoundException;
@@ -39,6 +42,9 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Autowired
     private UserRoleRepository userRoleRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public UserInfoCreateResponse createUserInfo(UserInfoCreateRequest request) throws Exception {
         log.info(":::::::UserInfoServiceImpl Class, createUserInfo method:::::");
@@ -53,6 +59,20 @@ public class UserInfoServiceImpl implements UserInfoService {
         log.info("::::::Tenant Name {}", tenantFromDB.getName());
         userInfo = new UserInfo();
         userInfo.setParentTenant(tenantFromDB.getId());
+        if (!StringUtils.isEmpty(request.getEmail())) {
+
+            String response = emailService.sendMail(
+                            new ModelMap().addAttribute("subject", "OTP for emailVerification")
+                                            .addAttribute("mailBody", "Your otp is 5432")
+                                            .addAttribute("to", "patelavinashbirgunj@gmail.com"));
+            if (response.equalsIgnoreCase("Mail Sent Success")) {
+                log.info(":::::mail has been sent successfully::::");
+                userInfo.setEmail(request.getEmail());
+            } else {
+                log.info("::::Inside else part of send email");
+                // thow the exception here
+            }
+        }
         userInfo.setEmail(request.getEmail());
         userInfo.setFirstName(request.getFirstName());
         userInfo.setImageUrl(request.getImageUrl());
