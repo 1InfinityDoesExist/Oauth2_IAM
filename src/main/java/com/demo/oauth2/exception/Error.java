@@ -5,7 +5,9 @@ import lombok.Getter;
 @Getter
 public enum Error {
 
-    INVALID_INPUT(401, "invalid_input");
+    INVALID_INPUT(401, "invalid_input"),
+
+    NOT_FOUND(404, "not_found");
 
     private int statusCode;
     private String message;

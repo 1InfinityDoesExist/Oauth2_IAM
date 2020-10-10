@@ -27,7 +27,7 @@ public class ApplicationException extends RuntimeException {
         this.error = error;
     }
 
-    ApplicationException(HttpStatus status, Error error, String debugMessage) {
+    public ApplicationException(HttpStatus status, Error error, String debugMessage) {
         super(error.getMessage(), null);
         this.httpStatus = status;
         this.debugMessage = debugMessage;
