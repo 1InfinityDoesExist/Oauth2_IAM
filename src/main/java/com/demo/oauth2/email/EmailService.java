@@ -6,14 +6,21 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.ModelMap;
 import org.thymeleaf.util.StringUtils;
-import com.demo.oauth2.util.Constants;
+import lombok.extern.slf4j.Slf4j;
 
+
+/*
+ * 
+ * https://myaccount.google.com/lesssecureapps turn it off
+ */
 @Component
+@Slf4j
 public class EmailService {
     @Autowired
     private GoogleProvider googleProvider;
@@ -31,8 +38,8 @@ public class EmailService {
     @Value("${reset.password.email.subject}")
     private String subject;
 
-    public void sendMail(ModelMap modelMap) {
-
+    public String sendMail(ModelMap modelMap) {
+        log.info(":::::Sending Email::::::");
         JavaMailSenderImpl javaMailSenderImpl = new JavaMailSenderImpl();
         javaMailSenderImpl.setHost(host);
         javaMailSenderImpl.setPort(port);
@@ -41,6 +48,8 @@ public class EmailService {
         javaMailSenderImpl.setJavaMailProperties(getJavaMailProperties(provider));
         MimeMessage mimeMessage = javaMailSenderImpl.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+        log.info("::::host {} , port {}, emailId {}, password {}, provider {}", host, port, emailId,
+                        password, provider);
         try {
             helper.setSubject((String) modelMap.get("subject"));
             helper.setText((String) modelMap.get("mailBody"));
@@ -49,21 +58,32 @@ public class EmailService {
             } else {
                 helper.setTo((String) modelMap.get("to"));
             }
+
+            log.info("::subject {}, mailBody {}, to {}", modelMap.get("subject"),
+                            modelMap.get("mailBody"), modelMap.get("to"));
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-        javaMailSenderImpl.send(mimeMessage);
+        log.info("About to send mail");
+        try {
+            javaMailSenderImpl.send(mimeMessage);
+        } catch (MailException e) {
+            log.info("::::::Could not send the mail ", e.getMessage());
+        }
+        return "Mail Sent Success";
     }
 
     private Properties getJavaMailProperties(String provider) {
+        log.info(":::::getJavaMailProperties method::::");
         Properties properties = new Properties();
-        if (provider.equalsIgnoreCase(StringUtils.capitalize(Constants.GOOGLE))) {
+        if (provider.equalsIgnoreCase(StringUtils.capitalize("GMAIL"))) {
             getJavaMailProperties(properties);
         }
         return properties;
     }
 
     private void getJavaMailProperties(Properties properties) {
+        log.info(":::::getJavaMailProperties method ::::");
         googleProvider.getGmailProperties().forEach((key, value) -> {
             properties.setProperty(key, value);
         });

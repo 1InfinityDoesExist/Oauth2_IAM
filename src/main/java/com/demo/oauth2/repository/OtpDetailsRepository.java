@@ -7,4 +7,6 @@ import com.demo.oauth2.entity.OtpDetails;
 @Repository
 public interface OtpDetailsRepository extends JpaRepository<OtpDetails, Long> {
 
+    public OtpDetails findOtpDetailsById(Long otpDetails);
+
 }
