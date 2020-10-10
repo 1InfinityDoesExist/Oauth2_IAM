@@ -15,12 +15,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import com.demo.oauth2.entity.UserInfo;
 import com.demo.oauth2.entity.UserRole;
 import com.demo.oauth2.repository.UserInfoRepository;
 import com.demo.oauth2.repository.UserRoleRepository;
+import com.fb.demo.entity.Tenant;
+import com.fb.demo.repository.TenantRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Service(value = "oauth2_service_impl")
@@ -34,6 +37,9 @@ public class Oauth2ServiceImpl implements UserDetailsService {
 
     @Autowired
     private UserInfoRepository userInfoRepository;
+
+    @Autowired
+    private TenantRepository tenantRepository;
 
 
     @Override
@@ -59,11 +65,43 @@ public class Oauth2ServiceImpl implements UserDetailsService {
                     String role,
                     String grantType, String provider, String password) {
         log.info("::::::Oauth2ServiceImpl Class, getUserInfoDetails method :::::");
-        UserInfo userInfo = userInfoRepository.findByEmail(userName);
+        UserInfo userInfo = getUserInfo(userName, parentTenant);
         log.info(":::::userInfo {}", userInfo);
         UserDetails userDetails = new User(userName, new BCryptPasswordEncoder().encode(password),
                         getAuthorityForUserInfo(userInfo));
         return userDetails;
+    }
+
+    private UserInfo getUserInfo(String userName, String parentTenant) {
+        Tenant tenant = null;
+        if (!StringUtils.isEmpty(parentTenant)) {
+            tenant = tenantRepository.getTenantByName(parentTenant);
+            if (tenant == null) {
+                // Exception
+            }
+        }
+        String mobileRegex = "[0-9]+";
+        String emailRegex = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                        + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        UserInfo userInfo = null;
+        if (userName.matches(emailRegex)) {
+            userInfo = userInfoRepository.findByEmailAndIsEmailVerifiedAndParentTenant(userName,
+                            true,
+                            tenant.getId());
+        }
+        if (userName.matches(mobileRegex)) {
+            userInfo = userInfoRepository.findByMobileAndIsMobileVerifiedAndParentTenant(userName,
+                            true,
+                            tenant.getId());
+        }
+        if (userInfo == null) {
+            userInfo = userInfoRepository.findByUsernameAndParentTenant(userName, tenant.getId());
+        }
+        if (userInfo == null) {
+            log.info("::::::UserInfo is null");
+            // exception
+        }
+        return userInfo;
     }
 
     private Collection<? extends GrantedAuthority> getAuthorityForUserInfo(UserInfo userInfo) {

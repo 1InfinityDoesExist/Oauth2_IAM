@@ -5,21 +5,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import com.demo.oauth2.email.EmailService;
+import com.demo.oauth2.entity.OtpDetails;
 import com.demo.oauth2.entity.UserInfo;
 import com.demo.oauth2.entity.UserRole;
+import com.demo.oauth2.exception.UserAlreadyExistException;
 import com.demo.oauth2.exception.UserInfoNotFoundException;
 import com.demo.oauth2.exception.UserRoleNotFound;
 import com.demo.oauth2.model.request.UserInfoCreateRequest;
 import com.demo.oauth2.model.response.UserInfoCreateResponse;
+import com.demo.oauth2.repository.OtpDetailsRepository;
 import com.demo.oauth2.repository.UserInfoRepository;
 import com.demo.oauth2.repository.UserRoleRepository;
 import com.demo.oauth2.service.UserInfoService;
+import com.demo.oauth2.util.CommonUtility;
 import com.fb.demo.entity.Tenant;
 import com.fb.demo.exception.TenantNotFoundException;
 import com.fb.demo.repository.TenantRepository;
@@ -45,6 +50,15 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private CommonUtility commonUtility;
+
+    @Autowired
+    private OtpDetailsRepository otpDetailsRepository;
+
+    @Value("${otp.expiry.time}")
+    public int otpExpiryTime;
+
     @Override
     public UserInfoCreateResponse createUserInfo(UserInfoCreateRequest request) throws Exception {
         log.info(":::::::UserInfoServiceImpl Class, createUserInfo method:::::");
@@ -56,14 +70,17 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (tenantFromDB == null) {
             throw new TenantNotFoundException("Tenant not found");
         }
+        validateUserInfo(request);
         log.info("::::::Tenant Name {}", tenantFromDB.getName());
         userInfo = new UserInfo();
         userInfo.setParentTenant(tenantFromDB.getId());
+        OtpDetails otpDetails = getOtpDetailsId();
         if (!StringUtils.isEmpty(request.getEmail())) {
-
             String response = emailService.sendMail(
                             new ModelMap().addAttribute("subject", "OTP for emailVerification")
-                                            .addAttribute("mailBody", "Your otp is 5432")
+                                            .addAttribute("mailBody",
+                                                            "Your otp is " + otpDetails
+                                                                            .getEmailOtp())
                                             .addAttribute("to", "patelavinashbirgunj@gmail.com"));
             if (response.equalsIgnoreCase("Mail Sent Success")) {
                 log.info(":::::mail has been sent successfully::::");
@@ -73,7 +90,7 @@ public class UserInfoServiceImpl implements UserInfoService {
                 // thow the exception here
             }
         }
-        userInfo.setEmail(request.getEmail());
+        userInfo.setOtpDetails(otpDetails.getId());
         userInfo.setFirstName(request.getFirstName());
         userInfo.setImageUrl(request.getImageUrl());
         userInfo.setLastName(request.getLastName());
@@ -89,6 +106,52 @@ public class UserInfoServiceImpl implements UserInfoService {
         response.setEmail(userInfo.getEmail());
         response.setUserName(userInfo.getUsername());
         return response;
+    }
+
+    private void validateUserInfo(UserInfoCreateRequest request) throws Exception {
+        if (StringUtils.isEmpty(request.getEmail()) && StringUtils.isEmpty(request.getMobile())) {
+            throw new InvalidInputException("Either Email or Mobile Number Must Be Present");
+        }
+
+        Tenant tenantFromDB = tenantRepository.getTenantByName(request.getParentTenant());
+        if (tenantFromDB == null) {
+            throw new TenantNotFoundException("Tenant not found");
+        }
+        UserInfo userInfo = null;
+        if (!StringUtils.isEmpty(request.getEmail())) {
+            userInfo = userInfoRepository
+                            .findByEmailAndIsEmailVerifiedAndParentTenant(request.getEmail(), true,
+                                            tenantFromDB.getId());
+            if (userInfo != null) {
+                throw new UserAlreadyExistException(
+                                "User already exist with email :" + request.getEmail());
+            }
+        }
+        if (!StringUtils.isEmpty(request.getMobile())) {
+            userInfo = userInfoRepository.findByMobileAndIsMobileVerifiedAndParentTenant(
+                            request.getMobile(),
+                            true, tenantFromDB.getId());
+            if (userInfo != null) {
+                throw new UserAlreadyExistException(
+                                "User already exist with moible :" + request.getMobile());
+            }
+        }
+        if (!StringUtils.isEmpty(request.getUsername())) {
+            userInfo = userInfoRepository.findByUsername(request.getUsername());
+            if (userInfo != null) {
+                throw new UserAlreadyExistException(
+                                "User already exist with username as : " + request.getUsername());
+            }
+        }
+    }
+
+    private OtpDetails getOtpDetailsId() {
+        OtpDetails otpDetails = new OtpDetails();
+        otpDetails.setEmailOtp(commonUtility.generateOTP());
+        otpDetails.setMobileOtp(commonUtility.generateOTP());
+        otpDetails.setEmailOtpExpiryDate(otpExpiryTime);
+        otpDetails.setMobileOtpExpiryDate(otpExpiryTime);
+        return otpDetailsRepository.save(otpDetails);
     }
 
     private List<Long> setUserRole(UserInfoCreateRequest request, UserInfo userInfo)
