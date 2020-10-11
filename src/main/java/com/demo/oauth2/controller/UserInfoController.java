@@ -1,9 +1,11 @@
 package com.demo.oauth2.controller;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,5 +77,21 @@ public class UserInfoController {
         String response = amazonS3Util.uploadUserInfoImage(pic, parentTenant, userName);
         return ResponseEntity.status(HttpStatus.OK)
                         .body(new ModelMap().addAttribute("msg", response));
+    }
+
+    @DeleteMapping(value = "/delete")
+    public ResponseEntity<?> deleteUserProfileImage(
+                    @RequestParam(value = "picUrl", required = true) String picUrl) {
+        amazonS3Util.deleteUserInfoImage(picUrl);
+        return ResponseEntity.status(HttpStatus.OK)
+                        .body(new ModelMap().addAttribute("response", "Successfully deleted."));
+    }
+
+    @GetMapping(value = "/getAll/{userName}")
+    public ResponseEntity<?> getAllUserProfileImage(
+                    @PathVariable(value = "userName", required = true) String userName) {
+        List<String> profileImagesList = amazonS3Util.getAllUserProfileImages();
+        return ResponseEntity.status(HttpStatus.OK)
+                        .body(new ModelMap().addAttribute("response", profileImagesList));
     }
 }
