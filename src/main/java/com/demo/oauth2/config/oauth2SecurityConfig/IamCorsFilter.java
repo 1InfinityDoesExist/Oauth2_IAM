@@ -12,20 +12,24 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
+@Slf4j
 public class IamCorsFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        log.info(":::::IamCorsFilter Class, filterConfig:::::");
 
     }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain)
                     throws IOException, ServletException {
+        log.info(":::::IamCorsFilter Class, doFilter method:::::");
         HttpServletResponse response = (HttpServletResponse) resp;
         HttpServletRequest request = (HttpServletRequest) req;
         response.setHeader("Access-Control-Allow-Origin", "*");
@@ -43,6 +47,6 @@ public class IamCorsFilter implements Filter {
 
     @Override
     public void destroy() {
-
+        log.info(":::::IamCorsFilter Class, destroy method:::::");
     }
 }
